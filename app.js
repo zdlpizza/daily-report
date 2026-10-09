@@ -694,10 +694,10 @@ const App = (() => {
   // =============================================
   const Settings = (() => {
     function open() {
-      $('settingsOwner').value = CONFIG.owner;
-      $('settingsRepo').value  = CONFIG.repo;
-      $('settingsDir').value   = CONFIG.reportDir;
-      $('settingsToken').value = CONFIG.token !== 'YOUR_GITEE_TOKEN' ? CONFIG.token : '';
+      $('settingsOwner').value = localStorage.getItem('gitee_owner') || CONFIG.owner;
+      $('settingsRepo').value  = localStorage.getItem('gitee_repo')  || CONFIG.repo;
+      $('settingsDir').value   = localStorage.getItem('gitee_dir') !== null ? localStorage.getItem('gitee_dir') : CONFIG.reportDir;
+      $('settingsToken').value = localStorage.getItem('gitee_token') || (CONFIG.token !== 'YOUR_GITEE_TOKEN' ? CONFIG.token : '');
       $('settingsOverlay').classList.add('show');
     }
     function close() { $('settingsOverlay').classList.remove('show'); }
@@ -793,7 +793,14 @@ const CONFIG = {
     }
 
     function loadFromStorage() {
-      // 配置从 config.js 读取，无需 localStorage
+      const owner = localStorage.getItem('gitee_owner');
+      const repo  = localStorage.getItem('gitee_repo');
+      const dir   = localStorage.getItem('gitee_dir');
+      const token = localStorage.getItem('gitee_token');
+      if (owner) CONFIG.owner = owner;
+      if (repo)  CONFIG.repo  = repo;
+      if (dir !== null) CONFIG.reportDir = dir;
+      if (token) CONFIG.token = token;
     }
 
     function bind() {
