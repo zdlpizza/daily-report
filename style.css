@@ -681,3 +681,58 @@ textarea#editor:focus {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #bbb; }
+
+/* =============================================
+   块状编辑器
+   ============================================= */
+.blocks-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: opacity 0.2s;
+}
+
+.report-block {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.block-title {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-bottom: 1px solid #f0c0c3;
+  user-select: none;
+}
+
+.block-list {
+  list-style: decimal;
+  margin: 0;
+  padding: 8px 14px 8px 36px;
+  min-height: 52px;
+}
+
+.block-item {
+  padding: 5px 4px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  outline: none;
+  border-radius: 3px;
+  transition: background 0.15s;
+  word-break: break-all;
+}
+.block-item:hover  { background: #fafafa; }
+.block-item:focus  {
+  background: #fff9f9;
+  box-shadow: inset 0 0 0 1px rgba(199,0,11,0.15);
+}
+.block-item:empty::before {
+  content: '点击输入...';
+  color: #ccc;
+  font-style: italic;
+  pointer-events: none;
+}
