@@ -22,7 +22,7 @@ const CONFIG = {
   adminUser: 'admin',
 
   // 应用标题
-  appTitle: '团队日报系统',
+  appTitle: '天石路日报系统',
 
   // Git 提交者信息
   committer: {
