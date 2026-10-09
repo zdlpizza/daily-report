@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>团队日报系统</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ================================================
+     登录页
+     ================================================ -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">📋</div>
+    <h2 class="login-title" id="loginTitle">登录日报系统</h2>
+    <p class="login-subtitle" id="loginSubtitle">请输入账号和密码</p>
+
+    <div class="form-group">
+      <label>用户名</label>
+      <input type="text" id="loginUser" placeholder="输入用户名" autocomplete="username" />
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="loginPass" placeholder="输入密码" autocomplete="current-password" />
+    </div>
+
+    <!-- 初始化提示（首次使用时显示） -->
+    <div id="initHint" class="init-hint" style="display:none">
+      ⚠️ 检测到系统尚未初始化，请直接设置管理员密码完成初始化。
+    </div>
+
+    <button class="btn btn-primary btn-block" id="loginBtn">登录</button>
+
+    <div class="login-footer">
+      <span>使用遇到问题？请联系管理员</span>
+      <button class="link-btn" id="settingsBtn">⚙️ Gitee 配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     主页面
+     ================================================ -->
+<div id="mainPage" style="display:none">
+
+  <!-- 顶部导航 -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <span class="icon">📋</span>
+      <span id="appTitle">团队日报系统</span>
+    </div>
+    <div class="navbar-right">
+      <span class="navbar-date" id="navDate"></span>
+      <div class="nav-user-wrap">
+        <span class="nav-avatar" id="navUserAvatar"></span>
+        <span class="nav-username" id="navUser"></span>
+      </div>
+      <button class="nav-btn" id="adminTabBtn" style="display:none">🛠 管理后台</button>
+      <button class="nav-btn" id="adminBackBtn" style="display:none">← 返回日报</button>
+      <button class="nav-btn" id="changePwdBtn">🔑 修改密码</button>
+      <button class="nav-btn nav-btn-logout" id="logoutBtn">退出</button>
+    </div>
+  </nav>
+
+  <!-- ---- 编辑器主区域 ---- -->
+  <div id="editorSection">
+    <div class="container">
+
+      <!-- 左：编辑区 -->
+      <div>
+        <div class="card">
+          <!-- 编辑器头部 -->
+          <div class="editor-header">
+            <div class="date-picker-wrap">
+              <label for="datePicker">📅 日期</label>
+              <input type="date" id="datePicker" />
+            </div>
+            <div class="editor-tabs">
+              <button class="tab-btn active" data-tab="edit">✏️ 编辑</button>
+              <button class="tab-btn" data-tab="preview">👁 预览</button>
+            </div>
+          </div>
+
+          <!-- 快捷模板 -->
+          <div class="template-bar">
+            <span class="tpl-label">快捷插入：</span>
+            <button class="tpl-btn" data-tpl="today">今日工作</button>
+            <button class="tpl-btn" data-tpl="plan">明日计划</button>
+            <button class="tpl-btn" data-tpl="issue">问题记录</button>
+            <button class="tpl-btn" data-tpl="done">完成清单</button>
+          </div>
+
+          <!-- 编辑器 / 预览 -->
+          <div class="editor-area">
+            <textarea id="editor" placeholder="在这里写日报，支持 Markdown 语法..."></textarea>
+            <div id="preview"></div>
+          </div>
+
+          <!-- 底部工具栏 -->
+          <div class="editor-footer">
+            <span class="word-count" id="wordCount">0 字 · 0 行</span>
+            <div class="btn-group">
+              <button class="btn btn-outline" id="tplBtn">📄 填入模板</button>
+              <button class="btn btn-outline" id="clearBtn">🗑 清空</button>
+              <button class="btn btn-primary" id="saveBtn">💾 保存日报</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tip-bar">
+          💡 支持 Markdown &nbsp;·&nbsp;
+          <kbd>Ctrl+S</kbd> 快速保存 &nbsp;·&nbsp;
+          日报存档在 Gitee 仓库
+        </div>
+      </div>
+
+      <!-- 右：历史列表 -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">📚</span> 我的日报
+            <button id="refreshBtn" class="icon-btn" title="刷新">🔄</button>
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="loading"><span class="spinner"></span>加载中...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ---- 管理员面板 ---- -->
+  <div id="adminPanel" style="display:none">
+    <div class="admin-container">
+
+      <!-- 左：用户列表 -->
+      <div class="admin-left">
+        <div class="card">
+          <div class="card-title">
+            <span class="icon">👥</span> 用户管理
+            <div style="margin-left:auto;display:flex;gap:6px">
+              <button id="refreshUsersBtn" class="icon-btn" title="刷新">🔄</button>
+              <button id="addUserBtn" class="btn btn-sm btn-primary">+ 新增用户</button>
+            </div>
+          </div>
+          <div id="adminUserList">
+            <div class="loading"><span class="spinner"></span>加载中...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：日报查看 -->
+      <div class="admin-right">
+        <div id="adminViewPanel" style="display:none">
+          <div class="card">
+            <div class="card-title">
+              <span class="icon">📄</span>
+              <span id="adminViewTitle">选择用户查看日报</span>
+            </div>
+            <div class="admin-report-wrap">
+              <!-- 日报日期列表 -->
+              <div class="admin-report-dates">
+                <div class="history-list" id="adminReportList"></div>
+              </div>
+              <!-- 日报内容 -->
+              <div class="admin-report-body" id="adminReportContent"></div>
+            </div>
+          </div>
+        </div>
+        <div id="adminViewEmpty" class="admin-view-empty">
+          <div class="empty-tip" style="padding:60px 0">
+            👈 点击左侧用户查看其日报
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /mainPage -->
+
+<!-- ================================================
+     Toast 提示
+     ================================================ -->
+<div class="toast" id="toast"></div>
+
+<!-- ================================================
+     设置弹窗（Gitee 配置）
+     ================================================ -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h3 class="modal-title">⚙️ Gitee 配置</h3>
+    <div class="form-group">
+      <label>Gitee 用户名 <span class="required">*</span></label>
+      <input type="text" id="settingsOwner" placeholder="例：zhangsan" />
+    </div>
+    <div class="form-group">
+      <label>仓库名 <span class="required">*</span></label>
+      <input type="text" id="settingsRepo" placeholder="例：daily-report" />
+    </div>
+    <div class="form-group">
+      <label>日报根目录（可留空）</label>
+      <input type="text" id="settingsDir" placeholder="例：reports" />
+    </div>
+    <div class="form-group">
+      <label>
+        私人令牌 Token <span class="required">*</span>
+        <a href="https://gitee.com/profile/personal_access_tokens"
+           target="_blank" class="help-link">如何获取？</a>
+      </label>
+      <input type="password" id="settingsToken" placeholder="粘贴你的 Gitee Token" />
+    </div>
+    <p class="modal-hint">⚠️ Token 仅存储在本地浏览器，不会上传到任何服务器。建议将仓库设为<strong>私有</strong>。</p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="closeSettings">取消</button>
+      <button class="btn btn-primary" id="saveSettings">保存配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     注册新用户弹窗（管理员）
+     ================================================ -->
+<div class="overlay" id="registerOverlay">
+  <div class="modal">
+    <h3 class="modal-title">➕ 新增用户</h3>
+    <div class="form-group">
+      <label>用户名 <span class="required">*</span></label>
+      <input type="text" id="regUsername" placeholder="2-20位，字母/数字/下划线" />
+    </div>
+    <div class="form-group">
+      <label>昵称</label>
+      <input type="text" id="regNickname" placeholder="显示名称（可选）" />
+    </div>
+    <div class="form-group">
+      <label>初始密码 <span class="required">*</span></label>
+      <input type="password" id="regPassword" placeholder="至少6位" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="closeRegister">取消</button>
+      <button class="btn btn-primary" id="submitRegister">创建用户</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     修改密码弹窗
+     ================================================ -->
+<div class="overlay" id="changePwdOverlay">
+  <div class="modal">
+    <h3 class="modal-title">🔑 修改密码</h3>
+    <div class="form-group">
+      <label>当前密码 <span class="required">*</span></label>
+      <input type="password" id="cpOldPwd" placeholder="输入当前密码" />
+    </div>
+    <div class="form-group">
+      <label>新密码 <span class="required">*</span></label>
+      <input type="password" id="cpNewPwd" placeholder="至少6位" />
+    </div>
+    <div class="form-group">
+      <label>确认新密码 <span class="required">*</span></label>
+      <input type="password" id="cpConfirmPwd" placeholder="再次输入新密码" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="closeChangePwd">取消</button>
+      <button class="btn btn-primary" id="submitChangePwd">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     脚本
+     ================================================ -->
+<script src="config.js"></script>
+<script src="gitee.js"></script>
+<script src="auth.js"></script>
+<script src="app.js"></script>
+
+<!-- 导航头像首字母 -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const orig = App.init.bind(App);
+    // 监听 navUser 变化，自动更新头像
+    const observer = new MutationObserver(() => {
+      const name = document.getElementById('navUser').textContent;
+      const avatar = document.getElementById('navUserAvatar');
+      if (name && avatar) {
+        avatar.textContent = name[0].toUpperCase();
+      }
+    });
+    observer.observe(document.getElementById('navUser'), { childList: true, characterData: true, subtree: true });
+  });
+</script>
+
+</body>
+</html>
