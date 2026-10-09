@@ -27,14 +27,19 @@ const Gitee = (() => {
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+    const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), c => c.charCodeAt(0));
+    const content = new TextDecoder().decode(bytes);
     return { content, sha: data.sha };
   }
 
   // 通用写文件（新建或更新）
   async function putFile(path, content, sha = null, message = '') {
     const url = `${BASE}/repos/${owner()}/${repo()}/contents/${path}`;
-    const encoded = btoa(unescape(encodeURIComponent(content)));
+    // 兼容中文及特殊字符的 Base64 编码
+    const encoded = btoa(
+      Array.from(new TextEncoder().encode(content))
+        .map(b => String.fromCharCode(b)).join('')
+    );
     const body = {
       access_token: token(),
       message: message || (sha ? `更新 ${path}` : `新建 ${path}`),
@@ -85,17 +90,22 @@ const Gitee = (() => {
   // ---- 用户数据 ----
 
   async function getUsers() {
-    const result = await getFile(usersPath());
-    if (!result) return { list: [], sha: null };
     try {
-      return { list: JSON.parse(result.content), sha: result.sha };
-    } catch {
-      return { list: [], sha: result.sha };
+      const result = await getFile(usersPath());
+      if (!result) return { list: [], sha: null };
+      try {
+        return { list: JSON.parse(result.content), sha: result.sha };
+      } catch {
+        return { list: [], sha: result.sha };
+      }
+    } catch (e) {
+      return { list: [], sha: null };
     }
   }
 
   async function saveUsers(users, sha) {
     const content = JSON.stringify(users, null, 2);
+    // sha=null 时新建文件，Gitee API 会自动创建父目录
     await putFile(usersPath(), content, sha, '更新用户列表');
   }
 
