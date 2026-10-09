@@ -27,6 +27,8 @@ const Gitee = (() => {
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    // 兼容 Gitee 返回数组（目录）或无 content 字段的情况
+    if (!data || !data.content) return null;
     const bytes = Uint8Array.from(atob(data.content.replace(/\n/g, '')), c => c.charCodeAt(0));
     const content = new TextDecoder().decode(bytes);
     return { content, sha: data.sha };
