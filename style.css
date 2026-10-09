@@ -746,3 +746,11 @@ textarea#editor:focus {
   background: #fff;
   padding: 2px;
 }
+
+.nav-logo {
+  height: 30px;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 8px;
+  object-fit: contain;
+}
