@@ -33,9 +33,9 @@ const App = (() => {
   const BlockEditor = (() => {
     const BLOCKS = [
       { id: 'today', title: '今日工作' },
-      { id: 'plan',  title: '明日计划' },
-      { id: 'issue', title: '遇到的问题' },
       { id: 'done',  title: '完成清单' },
+      { id: 'issue', title: '遇到的问题' },
+      { id: 'plan',  title: '明日计划' },
     ];
 
     let onChangeCallback = null;
@@ -127,9 +127,9 @@ const App = (() => {
     function toMarkdown(date) {
       const titles = {
         today: '今日工作',
-        plan:  '明日计划',
-        issue: '遇到的问题',
         done:  '完成清单',
+        issue: '遇到的问题',
+        plan:  '明日计划',
       };
       let md = `# 日报 ${date}\n`;
       BLOCKS.forEach(b => {
