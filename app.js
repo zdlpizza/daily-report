@@ -395,6 +395,7 @@ const App = (() => {
       $('adminBackBtn').style.display = 'none';
 
       $('navUser').textContent = user.nickname;
+      $('navUserAvatar').textContent = (user.nickname || user.username)[0].toUpperCase();
       $('navDate').textContent = getTodayStr() + ' ' + getWeekDay(getTodayStr());
       $('appTitle').textContent = CONFIG.appTitle;
       document.title = CONFIG.appTitle;
