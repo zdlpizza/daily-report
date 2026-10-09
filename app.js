@@ -148,7 +148,6 @@ const App = (() => {
 
     // 从 Markdown 解析内容填入编辑器
     function fromMarkdown(md) {
-      // 先清空
       BLOCKS.forEach(b => initBlock(b.id));
       if (!md) return;
 
@@ -163,33 +162,25 @@ const App = (() => {
       const lines = md.split('\n');
 
       lines.forEach(line => {
-        // 匹配 ## 标题
         const h2 = line.match(/^##\s+(.+)$/);
         if (h2) {
-          const key = h2[1].trim();
-          currentBlock = sectionMap[key] || null;
+          currentBlock = sectionMap[h2[1].trim()] || null;
           return;
         }
-
         if (!currentBlock) return;
 
-        // 匹配有序列表 1. xxx 或无序 - xxx / * xxx，或纯文本行
+        // 只解析有序列表 "1. xxx" 或无序列表 "- xxx" / "* xxx"
         const ordered   = line.match(/^\d+\.\s+(.+)$/);
         const unordered = line.match(/^[-*]\s+(.+)$/);
-        const plain     = line.trim();
-        const text = ordered
-          ? ordered[1].trim()
-          : (unordered ? unordered[1].trim() : (plain && !plain.startsWith('#') ? plain : null));
+        const text = ordered ? ordered[1].trim() : (unordered ? unordered[1].trim() : null);
 
         if (text && text !== '无') {
           const ol = $(`block-${currentBlock}`);
-          // 第一条：如果只有一个空行，直接替换
           const items = ol.querySelectorAll('li');
           if (items.length === 1 && items[0].textContent === '') {
             items[0].textContent = text;
           } else {
-            const li = createLi(text);
-            ol.appendChild(li);
+            ol.appendChild(createLi(text));
           }
         }
       });
