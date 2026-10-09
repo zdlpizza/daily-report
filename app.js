@@ -173,10 +173,13 @@ const App = (() => {
 
         if (!currentBlock) return;
 
-        // 匹配有序列表 1. xxx 或无序 - xxx / * xxx
+        // 匹配有序列表 1. xxx 或无序 - xxx / * xxx，或纯文本行
         const ordered   = line.match(/^\d+\.\s+(.+)$/);
         const unordered = line.match(/^[-*]\s+(.+)$/);
-        const text = ordered ? ordered[1].trim() : (unordered ? unordered[1].trim() : null);
+        const plain     = line.trim();
+        const text = ordered
+          ? ordered[1].trim()
+          : (unordered ? unordered[1].trim() : (plain && !plain.startsWith('#') ? plain : null));
 
         if (text && text !== '无') {
           const ol = $(`block-${currentBlock}`);
