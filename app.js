@@ -690,50 +690,123 @@ const App = (() => {
   })();
 
   // =============================================
-  // 设置面板
+  // 设置面板：保存时直接写入 Gitee 仓库的 config.js
   // =============================================
   const Settings = (() => {
     function open() {
-      $('settingsOwner').value = localStorage.getItem('gitee_owner') || CONFIG.owner;
-      $('settingsRepo').value  = localStorage.getItem('gitee_repo')  || CONFIG.repo;
-      $('settingsDir').value   = localStorage.getItem('gitee_dir') !== null ? localStorage.getItem('gitee_dir') : CONFIG.reportDir;
-      $('settingsToken').value = localStorage.getItem('gitee_token') || '';
+      $('settingsOwner').value = CONFIG.owner;
+      $('settingsRepo').value  = CONFIG.repo;
+      $('settingsDir').value   = CONFIG.reportDir;
+      $('settingsToken').value = CONFIG.token !== 'YOUR_GITEE_TOKEN' ? CONFIG.token : '';
       $('settingsOverlay').classList.add('show');
     }
     function close() { $('settingsOverlay').classList.remove('show'); }
-    function save() {
+
+    async function save() {
       const owner = $('settingsOwner').value.trim();
       const repo  = $('settingsRepo').value.trim();
       const dir   = $('settingsDir').value.trim();
       const token = $('settingsToken').value.trim();
-      if (!owner || !repo || !token) { showToast('用户名、仓库名和 Token 不能为空', 'error'); return; }
-      localStorage.setItem('gitee_owner', owner);
-      localStorage.setItem('gitee_repo',  repo);
-      localStorage.setItem('gitee_dir',   dir);
-      localStorage.setItem('gitee_token', token);
-      CONFIG.owner = owner; CONFIG.repo = repo; CONFIG.reportDir = dir; CONFIG.token = token;
-      close();
-      showToast('配置已保存，请重新登录');
-      Auth.logout();
-      LoginPage.show();
+      if (!owner || !repo || !token) {
+        showToast('用户名、仓库名和 Token 不能为空', 'error'); return;
+      }
+
+      const btn = $('saveSettings');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+
+      // 生成新的 config.js 内容
+      const newConfig = `// =============================================
+// Gitee 日报系统配置文件（自动生成，请勿手动修改）
+// =============================================
+
+const CONFIG = {
+  owner: '${owner}',
+  repo: '${repo}',
+  reportDir: '${dir}',
+  usersFile: 'data/users.json',
+  token: '${token}',
+  adminUser: 'admin',
+  appTitle: '团队日报系统',
+  committer: {
+    name: 'Daily Report Bot',
+    email: '691961576@qq.com',
+  },
+};
+`;
+
+      try {
+        // 先用当前 token 获取 config.js 的 sha
+        const BASE = 'https://gitee.com/api/v5';
+        const shaRes = await fetch(
+          `${BASE}/repos/${owner}/${repo}/contents/config.js?access_token=${token}`
+        );
+        let sha = null;
+        if (shaRes.ok) {
+          const shaData = await shaRes.json();
+          sha = shaData.sha;
+        }
+
+        // 编码内容
+        const encoded = btoa(
+          Array.from(new TextEncoder().encode(newConfig))
+            .map(b => String.fromCharCode(b)).join('')
+        );
+
+        const body = {
+          access_token: token,
+          message: '更新系统配置',
+          content: encoded,
+          committer: { name: 'Daily Report Bot', email: '691961576@qq.com' },
+        };
+        if (sha) body.sha = sha;
+
+        const res = await fetch(`${BASE}/repos/${owner}/${repo}/contents/config.js`, {
+          method: sha ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const msg = Array.isArray(err.message) ? err.message.join('; ') : (err.message || `HTTP ${res.status}`);
+          throw new Error(msg);
+        }
+
+        // 更新内存中的 CONFIG
+        CONFIG.owner     = owner;
+        CONFIG.repo      = repo;
+        CONFIG.reportDir = dir;
+        CONFIG.token     = token;
+
+        close();
+        showToast('配置已保存到仓库，请重新登录');
+        Auth.logout();
+        setTimeout(() => LoginPage.show(), 1000);
+
+      } catch (e) {
+        showToast('保存失败：' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '保存配置';
+      }
     }
+
     function loadFromStorage() {
-      const owner = localStorage.getItem('gitee_owner');
-      const repo  = localStorage.getItem('gitee_repo');
-      const dir   = localStorage.getItem('gitee_dir');
-      const token = localStorage.getItem('gitee_token');
-      if (owner) CONFIG.owner = owner;
-      if (repo)  CONFIG.repo  = repo;
-      if (dir !== null) CONFIG.reportDir = dir;
-      if (token) CONFIG.token = token;
+      // 配置从 config.js 读取，无需 localStorage
     }
+
     function bind() {
-      $('settingsBtn').addEventListener('click', open);
+      const btn = $('settingsBtn');
+      if (btn) btn.addEventListener('click', open);
       $('closeSettings').addEventListener('click', close);
       $('saveSettings').addEventListener('click', save);
-      $('settingsOverlay').addEventListener('click', e => { if (e.target === $('settingsOverlay')) close(); });
+      $('settingsOverlay').addEventListener('click', e => {
+        if (e.target === $('settingsOverlay')) close();
+      });
     }
-    return { open, close, save, bind, loadFromStorage };
+
+    return { open, close, bind, loadFromStorage };
   })();
 
   // =============================================
@@ -750,7 +823,7 @@ const App = (() => {
     Settings.bind();
 
     const user = Auth.getCurrentUser();
-    if (user && CONFIG.token && CONFIG.token !== 'YOUR_GITEE_TOKEN') {
+    if (user) {
       MainPage.show(user);
     } else if (!CONFIG.token || CONFIG.token === 'YOUR_GITEE_TOKEN') {
       Settings.open();
