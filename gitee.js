@@ -54,7 +54,8 @@ const Gitee = (() => {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `写入失败 HTTP ${res.status}`);
+      const msg = Array.isArray(err.message) ? err.message.join('; ') : (err.message || `写入失败 HTTP ${res.status}`);
+      throw new Error(msg);
     }
     return await res.json();
   }
@@ -74,7 +75,8 @@ const Gitee = (() => {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || `删除失败 HTTP ${res.status}`);
+      const msg = Array.isArray(err.message) ? err.message.join('; ') : (err.message || `删除失败 HTTP ${res.status}`);
+      throw new Error(msg);
     }
   }
 
