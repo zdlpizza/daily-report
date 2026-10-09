@@ -16,20 +16,22 @@ const Auth = (() => {
       .join('');
   }
 
-  // ---- 当前登录用户（存 sessionStorage） ----
+  // ---- 当前登录用户（存 sessionStorage，key 含域隔离） ----
   function getCurrentUser() {
     try {
-      const raw = sessionStorage.getItem('current_user');
+      const raw = sessionStorage.getItem('dr_current_user');
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
   }
 
   function setCurrentUser(user) {
-    sessionStorage.setItem('current_user', JSON.stringify(user));
+    // 先清除，再写入，确保不残留旧用户信息
+    sessionStorage.removeItem('dr_current_user');
+    sessionStorage.setItem('dr_current_user', JSON.stringify(user));
   }
 
   function logout() {
-    sessionStorage.removeItem('current_user');
+    sessionStorage.removeItem('dr_current_user');
   }
 
   function isAdmin(user) {
@@ -50,6 +52,8 @@ const Auth = (() => {
       const found = list.find(u => u.username === username && u.password === hash);
       if (!found) return { ok: false, msg: '用户名或密码错误' };
 
+      // 清除旧登录信息，再写入新用户
+      sessionStorage.removeItem('dr_current_user');
       const user = { username: found.username, nickname: found.nickname || found.username };
       setCurrentUser(user);
       return { ok: true, user };
