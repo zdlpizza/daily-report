@@ -77,32 +77,37 @@
               <label for="datePicker">📅 日期</label>
               <input type="date" id="datePicker" />
             </div>
-            <div class="editor-tabs">
-              <button class="tab-btn active" data-tab="edit">✏️ 编辑</button>
-              <button class="tab-btn" data-tab="preview">👁 预览</button>
+          </div>
+
+          <!-- 结构化四区块编辑器 -->
+          <div class="blocks-editor" id="blocksEditor">
+
+            <div class="report-block" data-block="today">
+              <div class="block-title">📌 今日工作</div>
+              <ol class="block-list" id="block-today" contenteditable="false"></ol>
             </div>
-          </div>
 
-          <!-- 快捷模板 -->
-          <div class="template-bar">
-            <span class="tpl-label">快捷插入：</span>
-            <button class="tpl-btn" data-tpl="today">今日工作</button>
-            <button class="tpl-btn" data-tpl="plan">明日计划</button>
-            <button class="tpl-btn" data-tpl="issue">问题记录</button>
-            <button class="tpl-btn" data-tpl="done">完成清单</button>
-          </div>
+            <div class="report-block" data-block="plan">
+              <div class="block-title">📅 明日计划</div>
+              <ol class="block-list" id="block-plan" contenteditable="false"></ol>
+            </div>
 
-          <!-- 编辑器 / 预览 -->
-          <div class="editor-area">
-            <textarea id="editor" placeholder="在这里写日报，支持 Markdown 语法..."></textarea>
-            <div id="preview"></div>
+            <div class="report-block" data-block="issue">
+              <div class="block-title">⚠️ 遇到的问题</div>
+              <ol class="block-list" id="block-issue" contenteditable="false"></ol>
+            </div>
+
+            <div class="report-block" data-block="done">
+              <div class="block-title">✅ 完成清单</div>
+              <ol class="block-list" id="block-done" contenteditable="false"></ol>
+            </div>
+
           </div>
 
           <!-- 底部工具栏 -->
           <div class="editor-footer">
-            <span class="word-count" id="wordCount">0 字 · 0 行</span>
+            <span class="word-count" id="wordCount">0 条记录</span>
             <div class="btn-group">
-              <button class="btn btn-outline" id="tplBtn">📄 填入模板</button>
               <button class="btn btn-outline" id="clearBtn">🗑 清空</button>
               <button class="btn btn-primary" id="saveBtn">💾 保存日报</button>
             </div>
@@ -110,9 +115,7 @@
         </div>
 
         <div class="tip-bar">
-          💡 支持 Markdown &nbsp;·&nbsp;
-          <kbd>Ctrl+S</kbd> 快速保存 &nbsp;·&nbsp;
-          日报存档在 Gitee 仓库
+          💡 点击条目编辑 &nbsp;·&nbsp; <kbd>Enter</kbd> 新增下一条 &nbsp;·&nbsp; <kbd>Ctrl+S</kbd> 保存 &nbsp;·&nbsp; 空行回车删除该条
         </div>
       </div>
 
@@ -274,10 +277,10 @@
 <!-- ================================================
      脚本
      ================================================ -->
-<script src="config.js?v=2"></script>
-<script src="gitee.js?v=2"></script>
-<script src="auth.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="config.js?v=3"></script>
+<script src="gitee.js?v=3"></script>
+<script src="auth.js?v=3"></script>
+<script src="app.js?v=3"></script>
 
 <!-- 导航头像首字母 -->
 <script>
