@@ -736,3 +736,13 @@ textarea#editor:focus {
   font-style: italic;
   pointer-events: none;
 }
+
+/* Logo */
+.nav-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #fff;
+  padding: 2px;
+}
