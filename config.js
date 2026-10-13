@@ -4,7 +4,7 @@
 
 const CONFIG = {
   // Gitee 仓库所有者用户名
-  owner: 'YOUR_GITEE_USERNAME',
+  owner: 'thelier',
 
   // 存储日报的仓库名
   repo: 'daily-report',
